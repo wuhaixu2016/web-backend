@@ -9,6 +9,7 @@ from .object.test_ssd_mobilenet import *
 from django.contrib import auth
 from django import forms
 from django.contrib.auth.models import User
+import threading
 
 
 def index(request):
@@ -20,10 +21,10 @@ def index(request):
         request.session['username'] = 0
 
     if(request.session['username'] == 1):
-        pass
+        return render(request, 'news/index.html')
     else:
-        return render(request, 'news/login.html')
-    return render(request, 'news/login.html')
+        return HttpResponseRedirect(reverse('login'))
+    return HttpResponseRedirect(reverse('login'))
 
 def login(request):
     is_def = 0
@@ -32,14 +33,14 @@ def login(request):
             is_def = 1
     if(is_def == 0):
         request.session['username'] = 0
-        
+
     if(request.session['username'] == 1):
         news_list = New.objects.order_by('-news_date')
         template = loader.get_template('news/index.html')
         context = {
             'news_list': news_list,
         }
-        return render(request, 'news/index.html')
+        return HttpResponseRedirect(reverse('index'))
 
     if(request.method == 'POST'):
         m_UserForm = NameForm(request.POST)
@@ -49,14 +50,14 @@ def login(request):
         if(username == 'admin' and password == '123456'):
             request.session['super'] = 1
             request.session['username'] = 1
-            return render(request, 'news/register.html')
+            return HttpResponseRedirect(reverse('register'))
 
         user = auth.authenticate(username = username, password = password)
 
         if(user):
             request.session['super'] = 0
             request.session['username'] = 1
-            return render(request, 'news/index.html')
+            return HttpResponseRedirect(reverse('index'))
 
         else:
             request.session['super'] = 0
@@ -91,9 +92,9 @@ def register(request):
                 user.save()
                 auth.login(request, user)
                 request.session['super'] = 0
-                return render(request, 'news/login.html')
+                return HttpResponseRedirect(reverse('login'))
     else:
-        return render(request, 'news/login.html')
+        return HttpResponseRedirect(reverse('login'))
 
 def logout(request):
     print('1\n\n')
@@ -112,7 +113,7 @@ def change(request):
             result = User.objects.filter(username = username)
             if(result == None or username == 'admin'):
                 #不能修改密码，错误提示
-                return render(request, 'news/login.html')
+                return HttpResponseRedirect(reverse('login'))
 
             user = auth.authenticate(username = username, password = password)
             print(user)
@@ -123,14 +124,17 @@ def change(request):
                 auth.login(request, user)
                 request.session['super'] = 0
                 request.session['username'] = 0
-                return render(request, 'news/login.html')
+                return HttpResponseRedirect(reverse('login'))
             else:
                 pass
     return render(request, 'news/change.html')
 
-def video(request):
+def test():
     p = model()
     return StreamingHttpResponse(p.work(), content_type="multipart/x-mixed-replace; boundary=frame")
+
+def video(request):
+    return test()
 
 def show(request):
     return render(request, 'news/show.html')

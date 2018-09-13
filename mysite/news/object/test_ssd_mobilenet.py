@@ -127,7 +127,7 @@ class model:
 
         with detection_graph.as_default():
             with tf.Session() as sess:
-                camera = cv2.VideoCapture(0)
+                camera = cv2.VideoCapture(0)#"rtsp://admin:admin@59.66.68.38:554/cam/realmonitor?channel=1&subtype=0")
                 img = None
                 count = 0
                 while camera.isOpened():
@@ -151,4 +151,4 @@ class model:
                             break
                     count += 1
                 camera.release()
-                cv2.destroyAllWindows()    
+                cv2.destroyAllWindows()
