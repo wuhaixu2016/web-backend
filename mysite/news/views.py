@@ -20,17 +20,19 @@ def index(request):
         request.session['username'] = 0
 
     if(request.session['username'] == 1):
-        news_list = New.objects.order_by('-news_date')
-        template = loader.get_template('news/index.html')
-        context = {
-            'news_list': news_list,
-        }
-        return HttpResponse(template.render(context, request))
+        pass
     else:
         return render(request, 'news/login.html')
     return render(request, 'news/login.html')
 
 def login(request):
+    is_def = 0
+    for key in request.session.keys():
+        if(key == 'username'):
+            is_def = 1
+    if(is_def == 0):
+        request.session['username'] = 0
+        
     if(request.session['username'] == 1):
         news_list = New.objects.order_by('-news_date')
         template = loader.get_template('news/index.html')
@@ -110,7 +112,7 @@ def change(request):
             result = User.objects.filter(username = username)
             if(result == None or username == 'admin'):
                 #不能修改密码，错误提示
-                return render(request, 'news/logout.html')
+                return render(request, 'news/login.html')
 
             user = auth.authenticate(username = username, password = password)
             print(user)
@@ -123,7 +125,7 @@ def change(request):
                 request.session['username'] = 0
                 return render(request, 'news/login.html')
             else:
-                return render(request, 'news/logout.html')
+                pass
     return render(request, 'news/change.html')
 
 def video(request):

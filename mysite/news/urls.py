@@ -10,5 +10,6 @@ urlpatterns = [
     path('logout/', views.logout, name = 'logout'),
     path('show/video/', views.video, name='video'),
     path('login/video/', views.video, name='video'),
+    path('home/video/', views.video, name='video'),
     path('show/', views.show, name='show'),
 ]
