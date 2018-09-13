@@ -1,0 +1,12 @@
+
+
+<h3><a href="{% url 'alarm'%}">Alarm Refresh</a></h3>
+
+<p>alarm for control</p>
+
+
+{% for news in news_list %}
+<li>
+    <p>{{ news.news_title }},{{ news.news_date }}<a href="{% url 'delete' news.id %}">delete</a></p>
+</li>
+{% endfor %}

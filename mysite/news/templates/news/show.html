@@ -10,8 +10,22 @@ video
 for superuser
 {% endblock %}
 {% block page-blog-content %}
+
+
 <iframe name="footer" marginwidth=0 marginheight=0 width=900 height=700  src="video/{{video_id}}" frameborder=0></iframe>
-<iframe src="alarm" name="alarm_report" width=900 height=700 frameborder=0 marginwidth=0 marginheight=0></iframe>
+<form action="{% url 'show' video_id %}" method="post">
+{% csrf_token %}
+    <label>left：</label><input type="text" name="left"/><label>right:</label><input type="text" name="right"/><br/>
+    <label>top：</label><input type="text" name="top"/><label>bottom:</label><input type="text" name="bottom"/><br/>
+<p>left小于right，top小于bottom，现在为（{{ left }}，{{ right }}，{{top }}，{{ bottom }}）</p>
+<input type="submit" value="提交"/>
+</form>
+
+
+<iframe name="alarm" marginwidth=0 marginheight=0 width=900 height=700  src="alarm/" frameborder=0></iframe>
+
+<br/>
+<br/>
 {% endblock %}
 
 {% block page-blog-login %}

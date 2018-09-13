@@ -1,4 +1,9 @@
 import os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
+import django
+django.setup()
+from news.models import New
+import os
 import time
 import tarfile
 import six.moves.urllib as urllib
@@ -10,6 +15,7 @@ from .match import *
 import glob as gb
 from .utils.ssd_mobilenet_utils import *
 from PIL import Image
+from django.utils import timezone
 
 close_thread = 0
 
@@ -41,6 +47,15 @@ def change_status():
 def get_status():
     global close_thread
     return close_thread
+
+def judge_alarm(left, right, top, bottom, center):
+    print(center)
+    print(left, right, top, bottom)
+    print("_______________")
+    if center[1] > left and center[1] < right and center[0] < bottom and center[0] > top:
+        alarm = "someone be in dangerous area(" + str(left) + "," + str(right) + "," + str(bottom) + "," +str(top) + ")" + 'with'+'('+str(center[1])+ ','+str(center[0]) + ')'
+        n = New(news_title = alarm, news_date = timezone.now())
+        n.save()
 
 class model:
     def __init__(self):
@@ -122,7 +137,7 @@ class model:
             else:
                 cv2.circle(self.tracking_save[num],(int(center[1]),int(center[0])),2,(55,255,155),2)
 
-    def work(self, v_id):
+    def work(self, v_id, v_type, l = 0 , r = 0, t= 0, b = 0):
         global detection_graph, close_thread
         with detection_graph.as_default():
             with tf.Session() as sess:
@@ -139,6 +154,18 @@ class model:
                             count = 0
                             image, img, name = self.object_detection(image, image_data_expanded, sess)
                             self.tracking(img, image, name)
+                            h, w, _ = image.shape
+                            if v_type != 0:
+                                for i in range(len(img)):
+                                    ymin, xmin, ymax, xmax = self.out_boxes[i]
+                                    left, right, top, bottom = (xmin * w, xmax * w,
+                                                              ymin * h, ymax * h)
+                                    top = max(0, np.floor(top + 0.5).astype('int32'))
+                                    left = max(0, np.floor(left + 0.5).astype('int32'))
+                                    bottom = min(h, np.floor(bottom + 0.5).astype('int32'))
+                                    right = min(w, np.floor(right + 0.5).astype('int32'))  
+                                    center = [(top+bottom)/2.0, (left+right)/2.0]
+                                    judge_alarm(l, r, t, b, center)
                         else:
                             image, img, name = draw_boxes(image, self.out_scores, self.out_boxes, self.out_classes, self.class_names, self.colors)
 

@@ -12,7 +12,10 @@ from django.contrib.auth.models import User
 import threading
 from django.utils import timezone
 
-
+left = 0
+right = 200
+top = 0
+bottom = 200
 
 def index(request):
     if get_status() == 0:
@@ -182,7 +185,7 @@ class MyThread(threading.Thread):
 
 def test(v_id):
     p = model()
-    return StreamingHttpResponse(p.work(v_id), content_type="multipart/x-mixed-replace; boundary=frame")
+    return StreamingHttpResponse(p.work(v_id, 0), content_type="multipart/x-mixed-replace; boundary=frame")
 
 def video(request, video_id):
     if get_status() == 1:
@@ -198,6 +201,16 @@ def video(request, video_id):
     return t.get_result()
 
 def show(request, video_id):
+    global left, right, top, bottom
+    if(request.method == 'POST'):
+        try:
+            if(request.POST['left'].isdigit() and request.POST['right'].isdigit() and request.POST['top'].isdigit() and request.POST['bottom'].isdigit()):
+                left = int(request.POST['left'])
+                right = int(request.POST['right'])
+                top = int(request.POST['top'])
+                bottom = int(request.POST['bottom'])
+        except :
+            pass
     if get_status() == 0:
         change_status()
         time.sleep(1)
@@ -209,25 +222,38 @@ def show(request, video_id):
         request.session['username'] = 0
 
     if(request.session['username'] == 1):
-        return render(request, 'news/show.html',{"video_id":video_id})
+        news_list = New.objects.order_by('-news_date')
+        return render(request, 'news/show.html',{"video_id":video_id, "news_list": news_list, "left": left, "right":right, "top":top, "bottom":bottom})
     else:
         return HttpResponseRedirect(reverse('login'))
 
-def for_test():
-    while(True):
+# deal with alarm cal
+def alarm_meta(v_id, left = 0, right = 500, top = 0, bottom = 500):
+    p = model()
+    return StreamingHttpResponse(p.work(v_id, 1, left, right, top, bottom), content_type="multipart/x-mixed-replace; boundary=frame")
+
+def alarm(request, video_id):
+    global left, right, top, bottom
+    if get_status() == 1:
+        change_status()
         time.sleep(1)
-        string = ""
-        tmp = 'toDelete'
-        tmp = '<a href="'+tmp  + '">Delete</a>'
-        tmp = '<p>someone is in the dangerous area。' + tmp + '</p>'
-        string += tmp
-        print(string)
-        yield (string)
+    video_id = int(video_id)
+    v = Video.objects.get(pk=video_id)
+    v_id = str(v.video_url)
+    if(v_id == '0'):
+        v_id = 0
+    t = MyThread(alarm_meta, (v_id,left,right,top,bottom,), str(video_id))
+    t.start()
+    return t.get_result()
 
-def alarm(request):
-    
-    return StreamingHttpResponse(for_test(), )
+# show
+def showAlarm(request):
+    if(request.session['username'] == 1):
+        news_list = New.objects.order_by('-news_date')
+        return render(request, 'news/alarm.html',{"news_list": news_list})
 
-def toDelete(request):
-    
-    return HttpResponseRedirect(reverse('login'))
+def delete(request, alarm_id):
+    n = New.objects.get(pk=alarm_id)
+    n.delete()
+    news_list = New.objects.order_by('-news_date')
+    return render(request, 'news/alarm.html',{"news_list": news_list})
