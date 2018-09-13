@@ -16,10 +16,13 @@ news copy from tengxun for homework<br/>
 <input type="submit" value="寻找"/>
 </form>
 <p>{{message}}</p>
+<br/>
+<br/>
 
 {% for video in video_list %}
-<iframe name="{{ forloop.counter }}" marginwidth=5 marginheight=5 width=500 height=500 src="video/{{ forloop.counter }}" frameborder=0>
-</iframe>
+<iframe name="{{ forloop.counter }}" marginwidth=5 marginheight=5 width=500 height=500 src="video/{{ forloop.counter }}" frameborder=0></iframe>
+
+<p><a href="{% url 'show' forloop.counter %}">查看监控详情</a></p>
 {% endfor %}
 
 {% endblock %}

@@ -8,7 +8,7 @@ urlpatterns = [
     path('change/', views.change, name='change'),
     path('register/', views.register, name = 'register'),
     path('logout/', views.logout, name = 'logout'),
-    path('show/video/', views.video, name='video'),
+    path('show/video/<int:video_id>', views.video, name='video'),
     path('home/video/<int:video_id>', views.video, name='video'),
-    path('show/', views.show, name='show'),
+    path('show/<int:video_id>', views.show, name='show'),
 ]

@@ -174,5 +174,5 @@ def video(request, video_id):
     t.start()
     return t.get_result()
 
-def show(request):
-    return render(request, 'news/show.html')
+def show(request, video_id):
+    return render(request, 'news/show.html',{"video_id":video_id})
