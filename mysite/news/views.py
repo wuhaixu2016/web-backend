@@ -129,12 +129,32 @@ def change(request):
                 pass
     return render(request, 'news/change.html')
 
-def test():
-    p = model()
-    return StreamingHttpResponse(p.work(), content_type="multipart/x-mixed-replace; boundary=frame")
+class MyThread(threading.Thread):
+    def __init__(self, func, args, name=''):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.func = func
+        self.args = args
+        self.result = self.func(*self.args)
+    def get_result(self):
+        try:
+            return self.result
+        except :
+            pass
 
-def video(request):
-    return test()
+def test(v_id):
+    p = model()
+    return StreamingHttpResponse(p.work(v_id), content_type="multipart/x-mixed-replace; boundary=frame")
+
+def video(request, video_id):
+    v_id = 0
+    if video_id == 0:
+        v_id = 0
+    else:
+        v_id = "rtsp://admin:admin@59.66.68.38:554/cam/realmonitor?channel=1&subtype=0"
+    t = MyThread(test, (v_id,), str(video_id))
+    t.start()
+    return t.get_result()
 
 def show(request):
     return render(request, 'news/show.html')

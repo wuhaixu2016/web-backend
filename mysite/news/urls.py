@@ -9,6 +9,6 @@ urlpatterns = [
     path('register/', views.register, name = 'register'),
     path('logout/', views.logout, name = 'logout'),
     path('show/video/', views.video, name='video'),
-    path('home/video/', views.video, name='video'),
+    path('home/video/<int:video_id>', views.video, name='video'),
     path('show/', views.show, name='show'),
 ]
