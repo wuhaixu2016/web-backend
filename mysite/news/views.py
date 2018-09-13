@@ -12,7 +12,12 @@ from django.contrib.auth.models import User
 import threading
 from django.utils import timezone
 
+
+
 def index(request):
+    if get_status() == 0:
+        change_status()
+        time.sleep(1)
     is_def = 0
     for key in request.session.keys():
         if(key == 'username'):
@@ -41,6 +46,9 @@ def index(request):
     return HttpResponseRedirect(reverse('login'))
 
 def login(request):
+    if get_status() == 0:
+        change_status()
+        time.sleep(1)
     is_def = 0
     for key in request.session.keys():
         if(key == 'username'):
@@ -122,12 +130,17 @@ def register(request):
         return HttpResponseRedirect(reverse('login'))
 
 def logout(request):
-    print('1\n\n')
+    if get_status() == 0:
+        change_status()
+        time.sleep(1)
     request.session['username'] = 0
     request.session['super'] = 0
     return HttpResponseRedirect(reverse('login'))
 
 def change(request):
+    if get_status() == 0:
+        change_status()
+        time.sleep(1)
     if(request.method == 'POST'):
         m_UserForm = NameForm(request.POST)
         if(m_UserForm.is_valid()):
@@ -172,6 +185,9 @@ def test(v_id):
     return StreamingHttpResponse(p.work(v_id), content_type="multipart/x-mixed-replace; boundary=frame")
 
 def video(request, video_id):
+    if get_status() == 1:
+        change_status()
+        time.sleep(1)
     video_id = int(video_id)
     v = Video.objects.get(pk=video_id)
     v_id = str(v.video_url)
@@ -182,6 +198,9 @@ def video(request, video_id):
     return t.get_result()
 
 def show(request, video_id):
+    if get_status() == 0:
+        change_status()
+        time.sleep(1)
     is_def = 0
     for key in request.session.keys():
         if(key == 'username'):

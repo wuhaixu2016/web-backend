@@ -11,6 +11,36 @@ import glob as gb
 from .utils.ssd_mobilenet_utils import *
 from PIL import Image
 
+close_thread = 0
+
+# What model to download
+model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
+model_file = model_name + '.tar.gz'
+
+# Download model to model_data dir
+model_dir = './model_data'
+if not os.path.isdir(model_dir):
+    os.mkdir(model_dir)
+model_path = os.path.join(model_dir, model_file)
+
+# Load a (frozen) Tensorflow model into memory.
+path_to_ckpt = model_dir + '/' + model_name + '/frozen_inference_graph.pb'
+
+detection_graph = tf.Graph()
+with detection_graph.as_default():
+    od_graph_def = tf.GraphDef()
+    with tf.gfile.GFile(path_to_ckpt, 'rb') as fid:
+        serialized_graph = fid.read()
+        od_graph_def.ParseFromString(serialized_graph)
+        tf.import_graph_def(od_graph_def, name='')
+
+def change_status():
+    global close_thread
+    close_thread = 1-close_thread
+
+def get_status():
+    global close_thread
+    return close_thread
 
 class model:
     def __init__(self):
@@ -23,7 +53,7 @@ class model:
         self.out_scores = []
         self.out_boxes = []
         self.out_classes = [] 
-        self.class_names = [] 
+        self.class_names = read_classes('./model_data/coco_classes.txt')
         self.colors = []
 
     def trans(self, image):
@@ -90,41 +120,10 @@ class model:
                 self.object_num += 1
 
             else:
-                print(self.type_save[num], name[i])
                 cv2.circle(self.tracking_save[num],(int(center[1]),int(center[0])),2,(55,255,155),2)
 
     def work(self, v_id):
-
-        # What model to download
-        model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
-        model_file = model_name + '.tar.gz'
-        
-        # Download model to model_data dir
-        model_dir = './model_data'
-        if not os.path.isdir(model_dir):
-            os.mkdir(model_dir)
-        model_path = os.path.join(model_dir, model_file)
-
-        # Untar model
-        tar_file = tarfile.open(model_path)
-        for file in tar_file.getmembers():
-            file_name = os.path.basename(file.name)
-            if 'frozen_inference_graph.pb' in file_name:
-                tar_file.extract(file, model_dir)
-
-        # Load a (frozen) Tensorflow model into memory.
-        path_to_ckpt = model_dir + '/' + model_name + '/frozen_inference_graph.pb'
-        
-        detection_graph = tf.Graph()
-        with detection_graph.as_default():
-            od_graph_def = tf.GraphDef()
-            with tf.gfile.GFile(path_to_ckpt, 'rb') as fid:
-                serialized_graph = fid.read()
-                od_graph_def.ParseFromString(serialized_graph)
-                tf.import_graph_def(od_graph_def, name='')
-
-        self.class_names = read_classes('./model_data/coco_classes.txt')
-
+        global detection_graph, close_thread
         with detection_graph.as_default():
             with tf.Session() as sess:
                 camera = cv2.VideoCapture(v_id)#"rtsp://admin:admin@59.66.68.38:554/cam/realmonitor?channel=1&subtype=0")
@@ -146,9 +145,11 @@ class model:
                         # send mjpg
                         yield (b'--frame\r\n'
                             b'Content-Type: image/jpeg\r\n\r\n' + self.trans(image) + b'\r\n\r\n')
-
-                        if cv2.waitKey(1) & 0xFF == ord('q'):
-                            break
                     count += 1
+                    if close_thread != 0:
+                        break
+
+                print("_________________________________________exit")
                 camera.release()
+                print("_________________________________________exactlyexit")
                 cv2.destroyAllWindows()
