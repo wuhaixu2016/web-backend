@@ -13,8 +13,8 @@ register for superuser
 <form action="{% url 'index'%}" method="post">
 {% csrf_token %}
     <label>用 户 名：</label><input type="text" name="username"/><br/>
-    <label>原有密码：</label><input type="text" name="password"/><br />
-    <label>新密码： </label><input type="text" name="password2"/><br /><br />
+    <label>原有密码：</label><input type="password" name="password"/><br />
+    <label>新密码： </label><input type="password" name="password2"/><br /><br />
 
 <input type="submit" value="确认"/>
 </form>

@@ -11,6 +11,7 @@ import glob as gb
 from .utils.ssd_mobilenet_utils import *
 from PIL import Image
 
+
 class model:
     def __init__(self):
         self.object_save = []
@@ -91,7 +92,6 @@ class model:
             else:
                 print(self.type_save[num], name[i])
                 cv2.circle(self.tracking_save[num],(int(center[1]),int(center[0])),2,(55,255,155),2)
-
 
     def work(self, v_id):
 

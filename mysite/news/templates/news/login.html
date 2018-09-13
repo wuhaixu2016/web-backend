@@ -13,7 +13,7 @@ login for superuser
 <form action="{% url 'login'%}" method="post">
 {% csrf_token %}
     <label>姓名</label><input type="text" name="username"/><br/>
-    <label>密码</label><input type="text" name="password"/><br /><br />
+    <label>密码</label><input type="password" name="password"/><br /><br />
 <input type="submit" value="login"/>
 </form>
 {% endblock %}

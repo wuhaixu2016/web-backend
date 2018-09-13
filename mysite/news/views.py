@@ -19,6 +19,7 @@ def index(request):
             is_def = 1
     if(is_def == 0):
         request.session['username'] = 0
+
     if(request.session['username'] == 1):
         message = ""
         if(request.method == 'POST'):
@@ -83,6 +84,13 @@ def login(request):
     return render(request, 'news/login.html')
 
 def register(request):
+    is_def = 0
+    for key in request.session.keys():
+        if(key == 'super'):
+            is_def = 1
+    if(is_def == 0):
+        request.session['super'] = 0
+
     t = request.session['super']
     if(t == 1):
         if(request.method == 'POST'):
@@ -165,7 +173,6 @@ def test(v_id):
 
 def video(request, video_id):
     video_id = int(video_id)
-    print(video_id)
     v = Video.objects.get(pk=video_id)
     v_id = str(v.video_url)
     if(v_id == '0'):
@@ -175,4 +182,33 @@ def video(request, video_id):
     return t.get_result()
 
 def show(request, video_id):
-    return render(request, 'news/show.html',{"video_id":video_id})
+    is_def = 0
+    for key in request.session.keys():
+        if(key == 'username'):
+            is_def = 1
+    if(is_def == 0):
+        request.session['username'] = 0
+
+    if(request.session['username'] == 1):
+        return render(request, 'news/show.html',{"video_id":video_id})
+    else:
+        return HttpResponseRedirect(reverse('login'))
+
+def for_test():
+    while(True):
+        time.sleep(1)
+        string = ""
+        tmp = 'toDelete'
+        tmp = '<a href="'+tmp  + '">Delete</a>'
+        tmp = '<p>someone is in the dangerous area。' + tmp + '</p>'
+        string += tmp
+        print(string)
+        yield (string)
+
+def alarm(request):
+    
+    return StreamingHttpResponse(for_test(), )
+
+def toDelete(request):
+    
+    return HttpResponseRedirect(reverse('login'))
