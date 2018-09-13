@@ -20,4 +20,7 @@ register for superuser
 </form>
 
 {% endblock %}
-{% block page-blog-login %}<a class="blog-nav-item active" href="{% url 'login'%}">login</a>{% endblock %}
+{% block page-blog-login %}          
+<a class="blog-nav-item active" href="{% url 'index'%}">Home</a>
+<a class="blog-nav-item active" href="{% url 'login'%}">login</a>
+{% endblock %}

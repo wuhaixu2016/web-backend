@@ -10,13 +10,22 @@ news copy from tengxun for homework<br/>
 {% endblock %}
 
 {% block page-blog-content %}
-<iframe name="footer" marginwidth=5 marginheight=5 width=500 height=500 src="video/0" frameborder=0>
+<form action="{% url 'index'%}" method="post">
+{% csrf_token %}
+    <label>监控网址：</label><input type="text" name="video_url"/>
+<input type="submit" value="寻找"/>
+</form>
+<p>{{message}}</p>
+
+{% for video in video_list %}
+<iframe name="{{ forloop.counter }}" marginwidth=5 marginheight=5 width=500 height=500 src="video/{{ forloop.counter }}" frameborder=0>
 </iframe>
-<iframe name="footer1" marginwidth=5 marginheight=5 width=500 height=500 src="video/1" frameborder=0>
-</iframe>
+{% endfor %}
+
 {% endblock %}
 
 {% block page-blog-login %}
+<a class="blog-nav-item active" href="{% url 'index'%}">Home</a>
 <a class="blog-nav-item active" href="{% url 'change'%}">修改密码</a>
 <a class="blog-nav-item active" href="{% url 'logout'%}">logout</a>
 {% endblock %}

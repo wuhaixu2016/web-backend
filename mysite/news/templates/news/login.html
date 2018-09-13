@@ -17,4 +17,7 @@ login for superuser
 <input type="submit" value="login"/>
 </form>
 {% endblock %}
-{% block page-blog-login %}<a class="blog-nav-item active" href="{% url 'change'%}">修改密码</a>{% endblock %}
+{% block page-blog-login %}
+<a class="blog-nav-item active" href="{% url 'index'%}">Home</a>
+<a class="blog-nav-item active" href="{% url 'change'%}">修改密码</a>
+{% endblock %}

@@ -9,3 +9,10 @@ class New(models.Model):
     news_type = models.IntegerField(default=1)
     def __str__(self):
     	return self.news_text
+
+class Video(models.Model):
+    video_title = models.CharField(max_length=200)
+    video_url = models.CharField(max_length=200)
+    video_date = models.DateTimeField('date published')
+    def __str__(self):
+        return self.video_url

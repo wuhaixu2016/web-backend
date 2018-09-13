@@ -10,7 +10,7 @@ Change Code
 register for superuser
 {% endblock %}
 {% block page-blog-content %}
-<form action="{% url 'change'%}" method="post">
+<form action="{% url 'index'%}" method="post">
 {% csrf_token %}
     <label>用 户 名：</label><input type="text" name="username"/><br/>
     <label>原有密码：</label><input type="text" name="password"/><br />
@@ -21,4 +21,7 @@ register for superuser
 
 {% endblock %}
 
-{% block page-blog-login %}<a class="blog-nav-item active" href="{% url 'login'%}">login</a>{% endblock %}
+{% block page-blog-login %}
+<a class="blog-nav-item active" href="{% url 'index'%}">Home</a>
+<a class="blog-nav-item active" href="{% url 'login'%}">login</a>
+{% endblock %}

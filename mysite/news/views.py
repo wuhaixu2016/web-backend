@@ -3,14 +3,14 @@ from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpRespons
 from django.template import loader
 from django.http import Http404
 from django.urls import reverse
-from .models import New
+from .models import New, Video
 from .forms import NameForm
 from .object.test_ssd_mobilenet import *
 from django.contrib import auth
 from django import forms
 from django.contrib.auth.models import User
 import threading
-
+from django.utils import timezone
 
 def index(request):
     is_def = 0
@@ -19,9 +19,22 @@ def index(request):
             is_def = 1
     if(is_def == 0):
         request.session['username'] = 0
-
     if(request.session['username'] == 1):
-        return render(request, 'news/index.html')
+        message = ""
+        if(request.method == 'POST'):
+            try:
+                m = request.POST['video_url']
+
+                news_list = Video.objects.filter(video_url= m)
+                if len(news_list) != 0:
+                    message = "视频已经存在"
+                else:
+                    n = Video(video_title = m, video_date = timezone.now(), video_url = m)
+                    n.save()
+            except :
+                pass
+        video_list = Video.objects.order_by('-video_date')
+        return render(request, 'news/index.html',{'message': message, "video_list": video_list})
     else:
         return HttpResponseRedirect(reverse('login'))
     return HttpResponseRedirect(reverse('login'))
@@ -35,11 +48,10 @@ def login(request):
         request.session['username'] = 0
 
     if(request.session['username'] == 1):
-        news_list = New.objects.order_by('-news_date')
+        message = ""
+        video_list = Video.objects.order_by('-video_date')
         template = loader.get_template('news/index.html')
-        context = {
-            'news_list': news_list,
-        }
+        context = {'message': message, "video_list": video_list}
         return HttpResponseRedirect(reverse('index'))
 
     if(request.method == 'POST'):
@@ -57,6 +69,10 @@ def login(request):
         if(user):
             request.session['super'] = 0
             request.session['username'] = 1
+            message = ""
+            video_list = Video.objects.order_by('-video_date')
+            template = loader.get_template('news/index.html')
+            context = {'message': message, "video_list": video_list}
             return HttpResponseRedirect(reverse('index'))
 
         else:
@@ -93,6 +109,7 @@ def register(request):
                 auth.login(request, user)
                 request.session['super'] = 0
                 return HttpResponseRedirect(reverse('login'))
+        return render(request, 'news/register.html')
     else:
         return HttpResponseRedirect(reverse('login'))
 
@@ -147,11 +164,12 @@ def test(v_id):
     return StreamingHttpResponse(p.work(v_id), content_type="multipart/x-mixed-replace; boundary=frame")
 
 def video(request, video_id):
-    v_id = 0
-    if video_id == 0:
+    video_id = int(video_id)
+    print(video_id)
+    v = Video.objects.get(pk=video_id)
+    v_id = str(v.video_url)
+    if(v_id == '0'):
         v_id = 0
-    else:
-        v_id = "rtsp://admin:admin@59.66.68.38:554/cam/realmonitor?channel=1&subtype=0"
     t = MyThread(test, (v_id,), str(video_id))
     t.start()
     return t.get_result()
