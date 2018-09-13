@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block page-header %}
+news world
+{% endblock %}
+{% block page-blog-title %}
+News Daily
+{% endblock %}
+{% block page-blog-descript %}
+news copy from tengxun for homework<br/>
+{% endblock %}
+
+{% block page-blog-content %}
+<iframe name="footer" marginwidth=5 marginheight=5 width=50% height=50% src="video" frameborder=0>
+</iframe>
+{% endblock %}
+
+{% block page-blog-login %}
+<a class="blog-nav-item active" href="{% url 'change'%}">修改密码</a>
+<a class="blog-nav-item active" href="{% url 'logout'%}">logout</a>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block page-header %}
+news world
+{% endblock %}
+{% block page-blog-title %}
+News Login
+{% endblock %}
+{% block page-blog-descript %}
+login for superuser
+{% endblock %}
+{% block page-blog-content %}
+<form action="{% url 'login'%}" method="post">
+{% csrf_token %}
+    <label>姓名</label><input type="text" name="username"/><br/>
+    <label>密码</label><input type="text" name="password"/><br /><br />
+<input type="submit" value="login"/>
+</form>
+{% endblock %}
+{% block page-blog-login %}<a class="blog-nav-item active" href="{% url 'change'%}">修改密码</a>{% endblock %}

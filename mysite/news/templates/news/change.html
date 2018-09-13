@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block page-header %}
+news world
+{% endblock %}
+{% block page-blog-title %}
+Change Code
+{% endblock %}
+{% block page-blog-descript %}
+register for superuser
+{% endblock %}
+{% block page-blog-content %}
+<form action="{% url 'change'%}" method="post">
+{% csrf_token %}
+    <label>用 户 名：</label><input type="text" name="username"/><br/>
+    <label>原有密码：</label><input type="text" name="password"/><br />
+    <label>新密码： </label><input type="text" name="password2"/><br /><br />
+
+<input type="submit" value="确认"/>
+</form>
+
+{% endblock %}
+
+{% block page-blog-login %}<a class="blog-nav-item active" href="{% url 'login'%}">login</a>{% endblock %}
