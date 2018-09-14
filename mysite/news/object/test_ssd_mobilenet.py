@@ -49,9 +49,6 @@ def get_status():
     return close_thread
 
 def judge_alarm(left, right, top, bottom, center, video_id, name):
-    print(center)
-    print(left, right, top, bottom)
-    print("_______________")
     if center[1] > left and center[1] < right and center[0] < bottom and center[0] > top:
         alarm = name + " be in dangerous area (" + str(left) + "," + str(right) + "," + str(bottom) + "," +str(top) + ")" + ' with '+'('+str(center[1])+ ','+str(center[0]) + ')'
         n = New(news_title = alarm, news_date = timezone.now(), news_type = video_id)
@@ -175,8 +172,5 @@ class model:
                     count += 1
                     if close_thread != 0:
                         break
-
-                print("_________________________________________exit")
                 camera.release()
-                print("_________________________________________exactlyexit")
                 cv2.destroyAllWindows()

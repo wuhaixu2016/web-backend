@@ -13,5 +13,7 @@ urlpatterns = [
     path('show/<int:video_id>', views.show, name='show'),
     path('show/alarm/<int:video_id>', views.showAlarm, name='showAlarm'),
     path('alarm/<int:video_id>', views.showAlarm, name='alarm'),
-    path('delete/<int:alarm_id>', views.delete, name='delete'),
+    path('delete/<int:alarm_id>/<int:video_id>', views.delete, name='delete'),
+    path('show/delete_all/<int:video_id>', views.deleteall, name='deleteall'),
+    path('delete_all/<int:video_id>', views.deleteall, name='deleteall'),
 ]

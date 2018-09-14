@@ -250,14 +250,20 @@ def alarm(request, video_id):
 # show
 def showAlarm(request, video_id):
     if(request.session['username'] == 1):
-        print(video_id)
         news_list = New.objects.filter(news_type=video_id)
-        return render(request, 'news/alarm.html',{"news_list": news_list})
+        return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
 
-def delete(request, alarm_id):
+def delete(request, alarm_id, video_id):
     n = New.objects.get(pk=alarm_id)
     m = n.news_type
     n.delete()
     news_list = New.objects.filter(news_type=m)
-    return render(request, 'news/alarm.html',{"news_list": news_list})
-    
+    return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
+
+def deleteall(request, video_id):
+    if(request.session['username'] == 1):
+        news_list = New.objects.filter(news_type=video_id)
+        for i in range(len(news_list)):
+            news_list[i].delete()
+    news_list = New.objects.filter(news_type=video_id)
+    return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
