@@ -16,6 +16,13 @@ login for superuser
     <label>密码</label><input type="password" name="password"/><br /><br />
 <input type="submit" value="login"/>
 </form>
+{% if messages %}
+<script>
+    {% for msg in messages %}
+        alert('{{ msg.message}}')
+    {% endfor %}
+</script>
+{% endif %}
 {% endblock %}
 {% block page-blog-login %}
 <a class="blog-nav-item active" href="{% url 'index'%}">Home</a>

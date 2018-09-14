@@ -18,7 +18,13 @@ register for superuser
 
 <input type="submit" value="register"/>
 </form>
-
+{% if messages %}
+<script>
+    {% for msg in messages %}
+        alert('{{ msg.message}}')
+    {% endfor %}
+</script>
+{% endif %}
 {% endblock %}
 {% block page-blog-login %}          
 <a class="blog-nav-item active" href="{% url 'index'%}">Home</a>

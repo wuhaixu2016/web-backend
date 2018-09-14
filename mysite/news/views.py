@@ -11,11 +11,13 @@ from django import forms
 from django.contrib.auth.models import User
 import threading
 from django.utils import timezone
+from django.contrib import messages
 
 left = 0
 right = 200
 top = 0
 bottom = 200
+
 
 def index(request):
     if get_status() == 0:
@@ -68,30 +70,32 @@ def login(request):
 
     if(request.method == 'POST'):
         m_UserForm = NameForm(request.POST)
-        username = request.POST['username']
-        password = request.POST['password']
+        if(m_UserForm.is_valid()):
+            username = request.POST['username']
+            password = request.POST['password']
 
-        if(username == 'admin' and password == '123456'):
-            request.session['super'] = 1
-            request.session['username'] = 1
-            return HttpResponseRedirect(reverse('register'))
+            if(username == 'admin' and password == '123456'):
+                request.session['super'] = 1
+                request.session['username'] = 1
+                return HttpResponseRedirect(reverse('register'))
 
-        user = auth.authenticate(username = username, password = password)
+            user = auth.authenticate(username = username, password = password)
 
-        if(user):
-            request.session['super'] = 0
-            request.session['username'] = 1
-            message = ""
-            video_list = Video.objects.order_by('-video_date')
-            template = loader.get_template('news/index.html')
-            context = {'message': message, "video_list": video_list}
-            return HttpResponseRedirect(reverse('index'))
+            if(user):
+                request.session['super'] = 0
+                request.session['username'] = 1
+                message = ""
+                video_list = Video.objects.order_by('-video_date')
+                template = loader.get_template('news/index.html')
+                context = {'message': message, "video_list": video_list}
+                return HttpResponseRedirect(reverse('index'))
 
-        else:
-            request.session['super'] = 0
-            request.session['username'] = 0
-            return render(request, 'news/login.html')
-            
+            else:
+                messages.add_message(request, messages.INFO, '用户名或密码错误')
+                request.session['super'] = 0
+                request.session['username'] = 0
+                return render(request, 'news/login.html')
+        return render(request, 'news/login.html')
     return render(request, 'news/login.html')
 
 def register(request):
@@ -111,22 +115,19 @@ def register(request):
                 password = request.POST['password']
                 password2 = request.POST['password2']
                 if(password != password2):
+                    messages.add_message(request, messages.INFO, '请确认密码')
                     return render(request, 'news/register.html')
                 
                 result = User.objects.filter(username = username)
                 if(result):
-                    return render(request, 'news/register.html')
-
-                user = auth.authenticate(username = username, password = password)
-                print(user)
-
-                if(user):#已有用户
+                    messages.add_message(request, messages.INFO, '用户已存在')
                     return render(request, 'news/register.html')
 
                 user = User.objects.create_user(username = username, password = password)
                 user.save()
                 auth.login(request, user)
                 request.session['super'] = 0
+                messages.add_message(request, messages.INFO, '注册成功')
                 return HttpResponseRedirect(reverse('login'))
         return render(request, 'news/register.html')
     else:
@@ -138,6 +139,7 @@ def logout(request):
         time.sleep(1)
     request.session['username'] = 0
     request.session['super'] = 0
+    messages.add_message(request, messages.INFO, '已退出登陆')
     return HttpResponseRedirect(reverse('login'))
 
 def change(request):
@@ -150,11 +152,17 @@ def change(request):
             username = request.POST['username']
             password = request.POST['password']
             password2 = request.POST['password2']
+            password3 = request.POST['password3']
 
             result = User.objects.filter(username = username)
             if(result == None or username == 'admin'):
                 #不能修改密码，错误提示
+                messages.add_message(request, messages.INFO, '用户名或密码错误')
                 return HttpResponseRedirect(reverse('login'))
+
+            if(password3 != password2):
+                    messages.add_message(request, messages.INFO, '请确认密码')
+                    return render(request, 'news/change.html')
 
             user = auth.authenticate(username = username, password = password)
             print(user)
@@ -165,9 +173,11 @@ def change(request):
                 auth.login(request, user)
                 request.session['super'] = 0
                 request.session['username'] = 0
+                messages.add_message(request, messages.INFO, '修改密码成果')
                 return HttpResponseRedirect(reverse('login'))
             else:
-                pass
+                messages.add_message(request, messages.INFO, '用户名或密码错误')
+                return render(request, 'news/change.html')
     return render(request, 'news/change.html')
 
 class MyThread(threading.Thread):
@@ -202,7 +212,7 @@ def video(request, video_id):
     return t.get_result()
 
 def show(request, video_id):
-    global left, right, top, bottom
+    global left, right, top, bottom, show_id
     if(request.method == 'POST'):
         try:
             if(request.POST['left'].isdigit() and request.POST['right'].isdigit() and request.POST['top'].isdigit() and request.POST['bottom'].isdigit()):
@@ -223,8 +233,8 @@ def show(request, video_id):
         request.session['username'] = 0
 
     if(request.session['username'] == 1):
-        news_list = New.objects.order_by('-news_date')
-        return render(request, 'news/show.html',{"video_id":video_id, "news_list": news_list, "left": left, "right":right, "top":top, "bottom":bottom})
+        show_id = get_channel()
+        return render(request, 'news/show.html',{"video_id":video_id, "track": show_id, "left": left, "right":right, "top":top, "bottom":bottom})
     else:
         return HttpResponseRedirect(reverse('login'))
 
@@ -249,6 +259,13 @@ def alarm(request, video_id):
 
 # show
 def showAlarm(request, video_id):
+    is_def = 0
+    for key in request.session.keys():
+        if(key == 'username'):
+            is_def = 1
+    if(is_def == 0):
+        request.session['username'] = 0
+
     if(request.session['username'] == 1):
         news_list = New.objects.filter(news_type=video_id)
         return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
@@ -261,9 +278,22 @@ def delete(request, alarm_id, video_id):
     return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
 
 def deleteall(request, video_id):
+    is_def = 0
+    for key in request.session.keys():
+        if(key == 'username'):
+            is_def = 1
+    if(is_def == 0):
+        request.session['username'] = 0
+
     if(request.session['username'] == 1):
         news_list = New.objects.filter(news_type=video_id)
         for i in range(len(news_list)):
             news_list[i].delete()
     news_list = New.objects.filter(news_type=video_id)
     return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
+
+def changeChannel(request, video_id):
+    change_channel()
+    show_id = get_channel()
+    global left, right, top, bottom
+    return render(request, 'news/show.html',{"video_id":video_id, "track": show_id, "left": left, "right":right, "top":top, "bottom":bottom})

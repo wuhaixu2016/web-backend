@@ -10,15 +10,22 @@ Change Code
 register for superuser
 {% endblock %}
 {% block page-blog-content %}
-<form action="{% url 'index'%}" method="post">
+<form action="{% url 'change'%}" method="post">
 {% csrf_token %}
-    <label>用 户 名：</label><input type="text" name="username"/><br/>
-    <label>原有密码：</label><input type="password" name="password"/><br />
-    <label>新密码： </label><input type="password" name="password2"/><br /><br />
+    <label>用户名：</label><input type="text" name="username"/><br/>
+    <label>原密码：</label><input type="password" name="password"/><br />
+    <label>新密码： </label><input type="password" name="password2"/><br />
+    <label>请确认密码： </label><input type="password" name="password3"/><br /><br />
 
 <input type="submit" value="确认"/>
 </form>
-
+{% if messages %}
+<script>
+    {% for msg in messages %}
+        alert('{{ msg.message}}')
+    {% endfor %}
+</script>
+{% endif %}
 {% endblock %}
 
 {% block page-blog-login %}

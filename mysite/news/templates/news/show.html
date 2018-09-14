@@ -11,8 +11,18 @@ for superuser
 {% endblock %}
 {% block page-blog-content %}
 
+<!-- <p>{{ show_id }}</p> -->
+<!-- {% if track == '0' %}
+<p><a href="{% url 'show' video.id %}">查看轨迹图 --><!-- </a></p>
+{% endif %} -->
+<!-- {% if show_id == 1 %}
+<p><a href="{% url 'show' video.id %}">继续监控</a></p>
+{% endif %} -->
+
+<p><a href="{% url 'changeChannel' video_id %}">查看另一视图</a></p>
 
 <iframe name="footer" marginwidth=0 marginheight=0 width=900 height=500  src="video/{{video_id}}" frameborder=0></iframe>
+
 <form action="{% url 'show' video_id %}" method="post">
 {% csrf_token %}
     <label>left：</label><input type="text" name="left"/><label>right:</label><input type="text" name="right"/><br/>

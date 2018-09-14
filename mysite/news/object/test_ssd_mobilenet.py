@@ -56,6 +56,17 @@ with detection_graph.as_default():
     boxes, scores, classes, num = sess.run([detection_boxes, detection_scores, detection_classes, num_detections],
                                                     feed_dict={image_tensor: image_data_expanded})
 
+
+show_id = 0
+def change_channel():
+    global show_id
+    show_id = 1-show_id
+
+def get_channel():
+    global show_id
+    return show_id
+
+
 def change_status():
     global close_thread
     close_thread = 1-close_thread
@@ -146,14 +157,13 @@ class model:
                 t = np.zeros((h,w,3),np.uint8)
                 self.tracking_save.append(t)
                 self.object_num += 1
-
             else:
-                cv2.circle(self.tracking_save[num],(int(center[1]),int(center[0])),2,(55,255,155),2)
-
+                cv2.circle(self.tracking_save[0],(int(center[1]),int(center[0])),2,((47*num)%256,(23*num)%256,255),2)
+                
     def work(self, v_id, v_type, video_id=0, l = 0 , r = 0, t= 0, b = 0):
-        global detection_graph, close_thread, cam, sess
+        global detection_graph, close_thread, cam, sess, show_id
         with detection_graph.as_default():
-            camera = cv2.VideoCapture(v_id)#"rtsp://admin:admin@59.66.68.38:554/cam/realmonitor?channel=1&subtype=0")
+            camera = cv2.VideoCapture(v_id)
             img = None
             count = 1
             while camera.isOpened():
@@ -180,9 +190,13 @@ class model:
                                 judge_alarm(l, r, t, b, center, video_id, name[i])
                     else:
                         image, img, name = draw_boxes(image, self.out_scores, self.out_boxes, self.out_classes, self.class_names, self.colors)
-                    # send mjpg
-                    yield (b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' + self.trans(image) + b'\r\n\r\n')
+                    if show_id == 0 or len(self.tracking_save) == 0:
+                        yield (b'--frame\r\n'
+                            b'Content-Type: image/jpeg\r\n\r\n' + self.trans(image) + b'\r\n\r\n')
+                    else:
+                        if len(self.tracking_save) > 0:
+                            yield (b'--frame\r\n'
+                                b'Content-Type: image/jpeg\r\n\r\n' + self.trans(self.tracking_save[0]) + b'\r\n\r\n')                    
                 count += 1
                 if close_thread != 0:
                     break
