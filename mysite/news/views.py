@@ -173,7 +173,7 @@ def change(request):
                 auth.login(request, user)
                 request.session['super'] = 0
                 request.session['username'] = 0
-                messages.add_message(request, messages.INFO, '修改密码成果')
+                messages.add_message(request, messages.INFO, '修改密码成功')
                 return HttpResponseRedirect(reverse('login'))
             else:
                 messages.add_message(request, messages.INFO, '用户名或密码错误')
