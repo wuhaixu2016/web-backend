@@ -40,6 +40,22 @@ with detection_graph.as_default():
         od_graph_def.ParseFromString(serialized_graph)
         tf.import_graph_def(od_graph_def, name='')
 
+with detection_graph.as_default():
+    sess = tf.Session()
+    image = cv2.imread('init.png')
+    image_data = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image_data_expanded = np.expand_dims(image_data, axis=0)
+    image_tensor = sess.graph.get_tensor_by_name('image_tensor:0')
+
+    detection_boxes = sess.graph.get_tensor_by_name('detection_boxes:0')
+           
+    detection_scores = sess.graph.get_tensor_by_name('detection_scores:0')
+    detection_classes = sess.graph.get_tensor_by_name('detection_classes:0')
+    num_detections = sess.graph.get_tensor_by_name('num_detections:0')
+
+    boxes, scores, classes, num = sess.run([detection_boxes, detection_scores, detection_classes, num_detections],
+                                                    feed_dict={image_tensor: image_data_expanded})
+
 def change_status():
     global close_thread
     close_thread = 1-close_thread
@@ -135,42 +151,40 @@ class model:
                 cv2.circle(self.tracking_save[num],(int(center[1]),int(center[0])),2,(55,255,155),2)
 
     def work(self, v_id, v_type, video_id=0, l = 0 , r = 0, t= 0, b = 0):
-        global detection_graph, close_thread
+        global detection_graph, close_thread, cam, sess
         with detection_graph.as_default():
-            with tf.Session() as sess:
-                camera = cv2.VideoCapture(v_id)#"rtsp://admin:admin@59.66.68.38:554/cam/realmonitor?channel=1&subtype=0")
-                img = None
-                count = 0
-                while camera.isOpened():
-                    ret, frame = camera.read() 
-                    if ret:
-                        image = frame
-                        image_data = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                        image_data_expanded = np.expand_dims(image_data, axis=0)
-                        if count % 5 == 0:
-                            count = 0
-                            image, img, name = self.object_detection(image, image_data_expanded, sess)
-                            self.tracking(img, image, name)
-                            h, w, _ = image.shape
-                            if v_type != 0:
-                                for i in range(len(img)):
-                                    ymin, xmin, ymax, xmax = self.out_boxes[i]
-                                    left, right, top, bottom = (xmin * w, xmax * w,
-                                                              ymin * h, ymax * h)
-                                    top = max(0, np.floor(top + 0.5).astype('int32'))
-                                    left = max(0, np.floor(left + 0.5).astype('int32'))
-                                    bottom = min(h, np.floor(bottom + 0.5).astype('int32'))
-                                    right = min(w, np.floor(right + 0.5).astype('int32'))  
-                                    center = [(top+bottom)/2.0, (left+right)/2.0]
-                                    judge_alarm(l, r, t, b, center, video_id, name[i])
-                        else:
-                            image, img, name = draw_boxes(image, self.out_scores, self.out_boxes, self.out_classes, self.class_names, self.colors)
-
-                        # send mjpg
-                        yield (b'--frame\r\n'
-                            b'Content-Type: image/jpeg\r\n\r\n' + self.trans(image) + b'\r\n\r\n')
-                    count += 1
-                    if close_thread != 0:
-                        break
-                camera.release()
-                cv2.destroyAllWindows()
+            camera = cv2.VideoCapture(v_id)#"rtsp://admin:admin@59.66.68.38:554/cam/realmonitor?channel=1&subtype=0")
+            img = None
+            count = 1
+            while camera.isOpened():
+                ret, frame = camera.read() 
+                if ret:
+                    image = frame
+                    image_data = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                    image_data_expanded = np.expand_dims(image_data, axis=0)
+                    if count % 5 == 0:
+                        count = 0
+                        image, img, name = self.object_detection(image, image_data_expanded, sess)
+                        self.tracking(img, image, name)
+                        h, w, _ = image.shape
+                        if v_type != 0:
+                            for i in range(len(img)):
+                                ymin, xmin, ymax, xmax = self.out_boxes[i]
+                                left, right, top, bottom = (xmin * w, xmax * w,
+                                                          ymin * h, ymax * h)
+                                top = max(0, np.floor(top + 0.5).astype('int32'))
+                                left = max(0, np.floor(left + 0.5).astype('int32'))
+                                bottom = min(h, np.floor(bottom + 0.5).astype('int32'))
+                                right = min(w, np.floor(right + 0.5).astype('int32'))  
+                                center = [(top+bottom)/2.0, (left+right)/2.0]
+                                judge_alarm(l, r, t, b, center, video_id, name[i])
+                    else:
+                        image, img, name = draw_boxes(image, self.out_scores, self.out_boxes, self.out_classes, self.class_names, self.colors)
+                    # send mjpg
+                    yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n\r\n' + self.trans(image) + b'\r\n\r\n')
+                count += 1
+                if close_thread != 0:
+                    break
+            camera.release()
+            cv2.destroyAllWindows()

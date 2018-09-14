@@ -2,6 +2,6 @@
 <p><a href="{% url 'deleteall' video_id%}">delete all alarms</a></p>
 {% for news in news_list %}
 <li>
-    <p>{{ news.news_title }},{{ news.news_date }}<a href="{% url 'delete' news.id video_id%}">delete</a></p>
+    <p>{{ news.news_title }}</p><p>{{ news.news_date }},<a href="{% url 'delete' news.id video_id%}">delete</a></p>
 </li>
 {% endfor %}
