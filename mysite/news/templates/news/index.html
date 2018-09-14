@@ -3,10 +3,10 @@
 news world
 {% endblock %}
 {% block page-blog-title %}
-News Daily
+Video
 {% endblock %}
 {% block page-blog-descript %}
-news copy from tengxun for homework<br/>
+choose video to get detail
 {% endblock %}
 
 {% block page-blog-content %}
@@ -20,9 +20,9 @@ news copy from tengxun for homework<br/>
 <br/>
 
 {% for video in video_list %}
-<iframe name="{{ forloop.counter }}" marginwidth=5 marginheight=5 width=500 height=500 src="video/{{ forloop.counter }}" frameborder=0></iframe>
+<iframe name="{{ forloop.counter }}" marginwidth=5 marginheight=5 width=500 height=500 src="video/{{ video.id }}" frameborder=0></iframe>
 
-<p><a href="{% url 'show' forloop.counter %}">查看监控详情</a></p>
+<p><a href="{% url 'show' video.id %}">查看监控详情</a></p>
 {% endfor %}
 <br/>
 <br/>

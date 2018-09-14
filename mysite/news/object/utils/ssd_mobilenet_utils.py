@@ -76,18 +76,7 @@ def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
             tmp = frame[top+5:bottom-5 ,left+5:right-5]
         img.append(tmp)
         # colors: RGB, opencv: BGR
-        cv2.rectangle(image, (left, top), (right, bottom), tuple(reversed(colors[c])), 6)
-
-        font_face = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 1
-        font_thickness = 2
-
-        label_size = cv2.getTextSize(label, font_face, font_scale, font_thickness)[0]
-        label_rect_left, label_rect_top = int(left - 3), int(top - 3)
-        label_rect_right, label_rect_bottom = int(left + 3 + label_size[0]), int(top - 5 - label_size[1])
-        cv2.rectangle(image, (label_rect_left, label_rect_top), (label_rect_right, label_rect_bottom), tuple(reversed(colors[c])), -1)
-
-        cv2.putText(image, label, (left, int(top - 4)), font_face, font_scale, (0, 0, 0), font_thickness, cv2.LINE_AA)
+        cv2.rectangle(image, (left, top), (right, bottom), tuple(reversed(colors[c])), 3)
         
     return image, img, name
 

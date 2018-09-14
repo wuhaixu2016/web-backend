@@ -48,13 +48,13 @@ def get_status():
     global close_thread
     return close_thread
 
-def judge_alarm(left, right, top, bottom, center):
+def judge_alarm(left, right, top, bottom, center, video_id, name):
     print(center)
     print(left, right, top, bottom)
     print("_______________")
     if center[1] > left and center[1] < right and center[0] < bottom and center[0] > top:
-        alarm = "someone be in dangerous area(" + str(left) + "," + str(right) + "," + str(bottom) + "," +str(top) + ")" + 'with'+'('+str(center[1])+ ','+str(center[0]) + ')'
-        n = New(news_title = alarm, news_date = timezone.now())
+        alarm = name + " be in dangerous area (" + str(left) + "," + str(right) + "," + str(bottom) + "," +str(top) + ")" + ' with '+'('+str(center[1])+ ','+str(center[0]) + ')'
+        n = New(news_title = alarm, news_date = timezone.now(), news_type = video_id)
         n.save()
 
 class model:
@@ -137,7 +137,7 @@ class model:
             else:
                 cv2.circle(self.tracking_save[num],(int(center[1]),int(center[0])),2,(55,255,155),2)
 
-    def work(self, v_id, v_type, l = 0 , r = 0, t= 0, b = 0):
+    def work(self, v_id, v_type, video_id=0, l = 0 , r = 0, t= 0, b = 0):
         global detection_graph, close_thread
         with detection_graph.as_default():
             with tf.Session() as sess:
@@ -165,7 +165,7 @@ class model:
                                     bottom = min(h, np.floor(bottom + 0.5).astype('int32'))
                                     right = min(w, np.floor(right + 0.5).astype('int32'))  
                                     center = [(top+bottom)/2.0, (left+right)/2.0]
-                                    judge_alarm(l, r, t, b, center)
+                                    judge_alarm(l, r, t, b, center, video_id, name[i])
                         else:
                             image, img, name = draw_boxes(image, self.out_scores, self.out_boxes, self.out_classes, self.class_names, self.colors)
 

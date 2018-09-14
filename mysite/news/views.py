@@ -192,7 +192,8 @@ def video(request, video_id):
         change_status()
         time.sleep(1)
     video_id = int(video_id)
-    v = Video.objects.get(pk=video_id)
+    print(video_id)
+    v = get_object_or_404(Video, pk=video_id)
     v_id = str(v.video_url)
     if(v_id == '0'):
         v_id = 0
@@ -228,9 +229,9 @@ def show(request, video_id):
         return HttpResponseRedirect(reverse('login'))
 
 # deal with alarm cal
-def alarm_meta(v_id, left = 0, right = 500, top = 0, bottom = 500):
+def alarm_meta(v_id, video_id, left = 0, right = 500, top = 0, bottom = 500):
     p = model()
-    return StreamingHttpResponse(p.work(v_id, 1, left, right, top, bottom), content_type="multipart/x-mixed-replace; boundary=frame")
+    return StreamingHttpResponse(p.work(v_id, 1, video_id, left, right, top, bottom), content_type="multipart/x-mixed-replace; boundary=frame")
 
 def alarm(request, video_id):
     global left, right, top, bottom
@@ -238,22 +239,25 @@ def alarm(request, video_id):
         change_status()
         time.sleep(1)
     video_id = int(video_id)
-    v = Video.objects.get(pk=video_id)
+    v = get_object_or_404(Video, pk=video_id)
     v_id = str(v.video_url)
     if(v_id == '0'):
         v_id = 0
-    t = MyThread(alarm_meta, (v_id,left,right,top,bottom,), str(video_id))
+    t = MyThread(alarm_meta, (v_id, video_id, left,right,top,bottom,), str(video_id))
     t.start()
     return t.get_result()
 
 # show
-def showAlarm(request):
+def showAlarm(request, video_id):
     if(request.session['username'] == 1):
-        news_list = New.objects.order_by('-news_date')
+        print(video_id)
+        news_list = New.objects.filter(news_type=video_id)
         return render(request, 'news/alarm.html',{"news_list": news_list})
 
 def delete(request, alarm_id):
     n = New.objects.get(pk=alarm_id)
+    m = n.news_type
     n.delete()
-    news_list = New.objects.order_by('-news_date')
+    news_list = New.objects.filter(news_type=m)
     return render(request, 'news/alarm.html',{"news_list": news_list})
+    
