@@ -18,7 +18,6 @@ right = 200
 top = 0
 bottom = 200
 
-
 def index(request):
     if get_status() == 0:
         change_status()
@@ -165,7 +164,6 @@ def change(request):
                     return render(request, 'news/change.html')
 
             user = auth.authenticate(username = username, password = password)
-            print(user)
             if(user):#已有用户
                 User.objects.filter(username = username).delete()
                 user = User.objects.create_user(username = username, password = password2)
@@ -202,7 +200,6 @@ def video(request, video_id):
         change_status()
         time.sleep(1)
     video_id = int(video_id)
-    print(video_id)
     v = get_object_or_404(Video, pk=video_id)
     v_id = str(v.video_url)
     if(v_id == '0'):
@@ -211,6 +208,7 @@ def video(request, video_id):
     t.start()
     return t.get_result()
 
+# deal with detail
 def show(request, video_id):
     global left, right, top, bottom, show_id
     if(request.method == 'POST'):
@@ -257,7 +255,7 @@ def alarm(request, video_id):
     t.start()
     return t.get_result()
 
-# show
+# showAlarm
 def showAlarm(request, video_id):
     is_def = 0
     for key in request.session.keys():
@@ -270,6 +268,7 @@ def showAlarm(request, video_id):
         news_list = New.objects.filter(news_type=video_id)
         return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
 
+# deleteAlarm
 def delete(request, alarm_id, video_id):
     n = New.objects.get(pk=alarm_id)
     m = n.news_type
@@ -277,6 +276,7 @@ def delete(request, alarm_id, video_id):
     news_list = New.objects.filter(news_type=m)
     return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
 
+# deleteAlarm
 def deleteall(request, video_id):
     is_def = 0
     for key in request.session.keys():
@@ -292,6 +292,7 @@ def deleteall(request, video_id):
     news_list = New.objects.filter(news_type=video_id)
     return render(request, 'news/alarm.html',{"news_list": news_list, "video_id": video_id})
 
+# change to another view
 def changeChannel(request, video_id):
     change_channel()
     show_id = get_channel()

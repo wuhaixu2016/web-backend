@@ -60,8 +60,6 @@ def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
         box = out_boxes[i]
         score = out_scores[i]
 
-        label = '{} {:.2f}'.format(predicted_class, score)
-
         # ssd_mobilenet
         ymin, xmin, ymax, xmax = box
         left, right, top, bottom = (xmin * w, xmax * w,
@@ -71,7 +69,6 @@ def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
         left = max(0, np.floor(left + 0.5).astype('int32'))
         bottom = min(h, np.floor(bottom + 0.5).astype('int32'))
         right = min(w, np.floor(right + 0.5).astype('int32'))
-        # print(label, (left, top), (right, bottom))
         if(top != bottom):
             tmp = frame[top+5:bottom-5 ,left+5:right-5]
         img.append(tmp)

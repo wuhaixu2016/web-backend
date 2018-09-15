@@ -19,6 +19,8 @@ from django.utils import timezone
 
 close_thread = 0
 
+
+# preload model
 # What model to download
 model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
 model_file = model_name + '.tar.gz'
@@ -95,12 +97,14 @@ class model:
         self.class_names = read_classes('./model_data/coco_classes.txt')
         self.colors = []
 
+    # encode
     def trans(self, image):
         imgRGB = cv2.cvtColor (image, cv2.IMREAD_COLOR)
         r, buf = cv2.imencode (".jpg", imgRGB)
         bytes_image =Image.fromarray (np.uint8 (buf)).tobytes ()
         return bytes_image
 
+    # use model
     def object_detection(self, image, image_data, sess):
 
         image_tensor = sess.graph.get_tensor_by_name('image_tensor:0')
@@ -121,6 +125,7 @@ class model:
         
         return image, img, name
 
+    # tracking person with match
     def tracking(self, img, image, name):
         h, w, _ = image.shape
         for i in range(len(img)):
@@ -149,7 +154,16 @@ class model:
                     left = max(0, np.floor(left + 0.5).astype('int32'))
                     bottom = min(h, np.floor(bottom + 0.5).astype('int32'))
                     right = min(w, np.floor(right + 0.5).astype('int32'))  
-                    center = [(top+bottom)/2.0, (left+right)/2.0]              
+                    center = [(top+bottom)/2.0, (left+right)/2.0]
+                    label = '{}'.format("id"+str(num+1))
+                    font_face = cv2.FONT_HERSHEY_SIMPLEX
+                    font_scale = 1
+                    font_thickness = 2
+
+                    label_size = cv2.getTextSize(label, font_face, font_scale, font_thickness)[0]
+                    label_rect_left, label_rect_top = int(left - 3), int(top - 3)
+                    label_rect_right, label_rect_bottom = int(left + 3 + label_size[0]), int(top - 5 - label_size[1])
+                    cv2.putText(image, label, (left, int(top - 4)), font_face, font_scale, (0, 0, 0), font_thickness, cv2.LINE_AA)
                     break
             if key == 0:
                 self.object_save.append(img[i])
@@ -159,7 +173,9 @@ class model:
                 self.object_num += 1
             else:
                 cv2.circle(self.tracking_save[0],(int(center[1]),int(center[0])),2,((47*num)%256,(23*num)%256,255),2)
-                
+        return image
+
+    # detection and send message   
     def work(self, v_id, v_type, video_id=0, l = 0 , r = 0, t= 0, b = 0):
         global detection_graph, close_thread, cam, sess, show_id
         with detection_graph.as_default():
@@ -175,7 +191,7 @@ class model:
                     if count % 5 == 0:
                         count = 0
                         image, img, name = self.object_detection(image, image_data_expanded, sess)
-                        self.tracking(img, image, name)
+                        image = self.tracking(img, image, name)
                         h, w, _ = image.shape
                         if v_type != 0:
                             for i in range(len(img)):
@@ -190,6 +206,7 @@ class model:
                                 judge_alarm(l, r, t, b, center, video_id, name[i])
                     else:
                         image, img, name = draw_boxes(image, self.out_scores, self.out_boxes, self.out_classes, self.class_names, self.colors)
+                        image = self.tracking(img, image, name)
                     if show_id == 0 or len(self.tracking_save) == 0:
                         yield (b'--frame\r\n'
                             b'Content-Type: image/jpeg\r\n\r\n' + self.trans(image) + b'\r\n\r\n')
